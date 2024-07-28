@@ -1,95 +1,65 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
 
-export default function Home() {
-  return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+import { Clone, useAnimations, useGLTF } from "@react-three/drei";
+import dynamic from "next/dynamic";
+import { Ref, Suspense, useEffect } from "react";
+import { Group } from "three";
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
+const View = dynamic(() => import("@/components/r3f/view").then((mod) => mod.View), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-96 w-full flex-col items-center justify-center">
+      <svg className="-ml-1 mr-3 h-5 w-5 animate-spin text-black" fill="none" viewBox="0 0 24 24">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+        <path
+          className="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 0 1 4 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
         />
-      </div>
+      </svg>
+    </div>
+  ),
+});
+const Common = dynamic(() => import("@/components/r3f/view").then((mod) => mod.Common), { ssr: false });
 
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
+function Duck() {
+  const { scene, animations } = useGLTF("/scene.gltf");
+  const { ref, mixer, names, actions, clips } = useAnimations(animations);
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
+  // animations.forEach((clip) => {
+  //   const action = mixer.clipAction(clip);
+  //   action.play();
+  // });
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
+  // useFrame((state, delta) => {
+  //   mixer.update(delta)
+  // })
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+  console.log("ANIMATIONS>>>>>>>>>>>>>>>", animations);
+  useEffect(() => {
+    actions?.Run?.play();
+  });
+
+  return (
+    <group position={[1.95, -0.8, -0.25]} rotation={[0, -0.5, 0]}>
+      <Clone ref={ref as Ref<Group> | undefined} scale={[1, 1, 1]} object={scene} castShadow />
+    </group>
+  );
+}
+
+export default function Page() {
+  return (
+    <>
+      <View orbit style={{ height: "100svh" }}>
+        <Suspense fallback={null}>
+          <Common />
+          <Duck />
+          <mesh position={[1.5, 0, 1]}>
+            <boxGeometry args={[0.5, 0.5, 0.5, 36, 36]} />
+            <meshBasicMaterial wireframe color="red" />
+          </mesh>
+        </Suspense>
+      </View>
+    </>
   );
 }
