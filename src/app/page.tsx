@@ -1,9 +1,11 @@
 "use client";
 
-import { Clone, useAnimations, useGLTF } from "@react-three/drei";
+import { Clone, useGLTF } from "@react-three/drei";
 import dynamic from "next/dynamic";
-import { Ref, Suspense, useEffect } from "react";
-import { Group } from "three";
+import { Ref, Suspense, useEffect, useRef } from "react";
+import { Clock, Group } from "three";
+import gsap from "gsap";
+import { useFrame } from "@react-three/fiber";
 
 const View = dynamic(() => import("@/components/r3f/view").then((mod) => mod.View), {
   ssr: false,
@@ -23,30 +25,33 @@ const View = dynamic(() => import("@/components/r3f/view").then((mod) => mod.Vie
 const Common = dynamic(() => import("@/components/r3f/view").then((mod) => mod.Common), { ssr: false });
 
 function Duck() {
-  const { scene, animations } = useGLTF("/scene.gltf");
-  const { ref, mixer, names, actions, clips } = useAnimations(animations);
-
-  // animations.forEach((clip) => {
-  //   const action = mixer.clipAction(clip);
-  //   action.play();
-  // });
-
-  // useFrame((state, delta) => {
-  //   mixer.update(delta)
-  // })
-
-  console.log("ANIMATIONS>>>>>>>>>>>>>>>", animations);
-  useEffect(() => {
-    actions?.Run?.play();
-  });
+  const { scene } = useGLTF("/scene.gltf");
 
   return (
-    <group position={[1.95, -0.8, -0.25]} rotation={[0, -0.5, 0]}>
-      <Clone ref={ref as Ref<Group> | undefined} scale={[1, 1, 1]} object={scene} castShadow />
+    <group position={[1.95, -1.75, -0.25]} rotation={[0, -0.5, 0]}>
+      <Clone scale={[2, 2, 2]} object={scene} castShadow />
     </group>
   );
 }
 
+function Cube() {
+  const cubeRef = useRef<any>(null!);
+  const clock = new Clock();
+
+  useFrame(() => {
+    if (cubeRef.current) {
+      const elapsedTime = clock.getElapsedTime();
+      cubeRef.current.rotation.y = Math.sin(elapsedTime);
+    }
+  });
+
+  return (
+    <mesh ref={cubeRef} position={[1.5, 0, 1]}>
+      <boxGeometry args={[0.5, 0.5, 0.5, 16, 16]} />
+      <meshBasicMaterial wireframe color="red" />
+    </mesh>
+  );
+}
 export default function Page() {
   return (
     <>
@@ -54,10 +59,7 @@ export default function Page() {
         <Suspense fallback={null}>
           <Common />
           <Duck />
-          <mesh position={[1.5, 0, 1]}>
-            <boxGeometry args={[0.5, 0.5, 0.5, 36, 36]} />
-            <meshBasicMaterial wireframe color="red" />
-          </mesh>
+          <Cube />
         </Suspense>
       </View>
     </>
