@@ -47,7 +47,7 @@ function Cube() {
 
   return (
     <mesh ref={cubeRef} position={[1.5, 0, 1]}>
-      <boxGeometry args={[0.5, 0.5, 0.5, 16, 16]} />
+      <boxGeometry args={[0.5, 0.5, 0.5]} />
       <meshBasicMaterial wireframe color="red" />
     </mesh>
   );
